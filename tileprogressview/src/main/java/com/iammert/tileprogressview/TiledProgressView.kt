@@ -63,12 +63,19 @@ class TiledProgressView @JvmOverloads constructor(
     private var currentProgressValue = 0.0f
 
     private var tiled = false
+    private var enableAnimation = false
+
+    var progress: Float
+        set(value) {
+            setProgressInternal(value)
+        }
+    get() = currentProgressValue
 
     init {
         attrs?.run {
             val styled =
                 context.obtainStyledAttributes(this, R.styleable.TiledProgressView, 0, 0)
-            setProgress(styled.getFloat(R.styleable.TiledProgressView_tpv_progress, 0f))
+            progress = styled.getFloat(R.styleable.TiledProgressView_tpv_progress, 0f)
             val color = styled.getColor(R.styleable.TiledProgressView_tpv_backgroundColor, Color.GREEN)
             setColor(color)
             val loadingColor =
@@ -114,11 +121,8 @@ class TiledProgressView @JvmOverloads constructor(
         }
     }
 
-    fun setProgress(
-        @FloatRange(from = 0.0, to = 100.0) progressValue: Float,
-        animate: Boolean = false
-    ) {
-        if (animate) {
+    private fun setProgressInternal(@FloatRange(from = 0.0, to = 100.0) progressValue: Float) {
+        if (enableAnimation) {
             progressAnimator.setFloatValues(currentProgressValue, progressValue)
             progressAnimator.start()
             tileShaderMatrixAnimator.start()
