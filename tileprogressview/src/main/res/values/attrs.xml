@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TiledProgressView">
+        <attr name="tpv_progress" format="float" />
+        <attr name="tpv_backgroundColor" format="color" />
+        <attr name="tpv_foregroundColor" format="color" />
+        <attr name="tpv_tiled" format="boolean" />
+    </declare-styleable>
+</resources>

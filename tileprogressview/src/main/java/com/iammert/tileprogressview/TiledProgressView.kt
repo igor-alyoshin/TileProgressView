@@ -28,7 +28,7 @@ class TiledProgressView @JvmOverloads constructor(
     private var backgroundProgressRadius: Float = 0f
 
     private val backgroundProgressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.white)
+        color = Color.GREEN
     }
 
     /**
@@ -43,10 +43,10 @@ class TiledProgressView @JvmOverloads constructor(
     private var foregroundProgressRadius = 0f
 
     private val foregroundProgressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.purple)
+        color = Color.BLUE
     }
 
-    private var borderWidth = resources.getDimension(R.dimen.progress_border)
+    private var borderWidth = 0f
 
     private var tileParticleBitmap: Bitmap? = null
 
@@ -61,6 +61,23 @@ class TiledProgressView @JvmOverloads constructor(
     private val progressAnimator = ValueAnimator.ofFloat()
 
     private var currentProgressValue = 0.0f
+
+    private var tiled = false
+
+    init {
+        attrs?.run {
+            val styled =
+                context.obtainStyledAttributes(this, R.styleable.TiledProgressView, 0, 0)
+            setProgress(styled.getFloat(R.styleable.TiledProgressView_tpv_progress, 0f))
+            val color = styled.getColor(R.styleable.TiledProgressView_tpv_backgroundColor, Color.GREEN)
+            setColor(color)
+            val loadingColor =
+                styled.getColor(R.styleable.TiledProgressView_tpv_foregroundColor, Color.BLUE)
+            tiled = styled.getBoolean(R.styleable.TiledProgressView_tpv_tiled, false)
+            setLoadingColor(loadingColor)
+            styled.recycle()
+        }
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -87,17 +104,28 @@ class TiledProgressView @JvmOverloads constructor(
             foregroundProgressRadius,
             foregroundProgressPaint
         )
-        canvas?.drawRoundRect(
-            foregroundProgressRectCurrent,
-            foregroundProgressRadius,
-            foregroundProgressRadius,
-            tileShaderPaint
-        )
+        if (tiled) {
+            canvas?.drawRoundRect(
+                foregroundProgressRectCurrent,
+                foregroundProgressRadius,
+                foregroundProgressRadius,
+                tileShaderPaint
+            )
+        }
     }
 
-    fun setProgress(@FloatRange(from = 0.0, to = 100.0) progressValue: Float) {
-        progressAnimator.setFloatValues(currentProgressValue, progressValue)
-        progressAnimator.start()
+    fun setProgress(
+        @FloatRange(from = 0.0, to = 100.0) progressValue: Float,
+        animate: Boolean = false
+    ) {
+        if (animate) {
+            progressAnimator.setFloatValues(currentProgressValue, progressValue)
+            progressAnimator.start()
+            tileShaderMatrixAnimator.start()
+        } else {
+            progressAnimator.cancel()
+            tileShaderMatrixAnimator.cancel()
+        }
         currentProgressValue = progressValue
     }
 
@@ -185,7 +213,6 @@ class TiledProgressView @JvmOverloads constructor(
         tileShaderMatrixAnimator.addListener(onEnd = {
             tileShaderMatrixAnimator.start()
         })
-        tileShaderMatrixAnimator.start()
     }
 
     private fun initializeProgressAnimator() {
@@ -202,6 +229,5 @@ class TiledProgressView @JvmOverloads constructor(
                         currentProgress
             invalidate()
         }
-        tileShaderMatrixAnimator.start()
     }
 }
